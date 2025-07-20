@@ -1,12 +1,15 @@
 ﻿{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "ignoreCommand": "echo 'No files ignored'",
-  "cleanUrls": true,
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "dist/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
