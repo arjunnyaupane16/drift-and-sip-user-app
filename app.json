@@ -8,6 +8,11 @@
     "scheme": "native",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -19,7 +24,6 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
