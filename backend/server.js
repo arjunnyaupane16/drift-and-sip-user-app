@@ -1,5 +1,5 @@
 // ------------------------------
-// 🌐 Drift and Sip - Backend Server
+// 🌐 Drift and Sip - Backend Server (Vercel)
 // ------------------------------
 
 import cors from 'cors';
@@ -7,96 +7,43 @@ import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
 import cron from 'node-cron';
-import os from 'os';
 
 import { archiveOldOrders } from './controllers/orderController.js';
-import { setupOrderCleanupJob } from './cronJobs.js'; // ✅ IMPORT CLEANUP JOB
+import { setupOrderCleanupJob } from './cronJobs.js';
 import orderRoutes from './routes/orderRoutes.js';
 
-// ------------------------------
-// 🔧 Load Environment Variables
-// ------------------------------
+// 🔧 Load environment variables
 dotenv.config();
 
+// ✅ Create Express App
 const app = express();
-
-// ------------------------------
-// 🛡️ Middleware
-// ------------------------------
 app.use(cors());
 app.use(express.json());
 
-// ------------------------------
-// 🏁 Basic Test Route
-// ------------------------------
+// ✅ Routes
 app.get('/', (req, res) => {
-  res.send('🚀 Drift and Sip Backend Running!');
+  res.send('🚀 Drift and Sip Backend Running on Vercel!');
 });
-
-// ------------------------------
-// 📦 API Routes
-// ------------------------------
 app.use('/api/orders', orderRoutes);
 
-// ------------------------------
-// ⏰ Scheduled Tasks (Cron Jobs)
-// ------------------------------
-const setupScheduledJobs = () => {
-  // ✅ Start cleanup job for soft-delete
-  setupOrderCleanupJob();
-
-  // ✅ Daily archiving at midnight
-  cron.schedule('0 0 * * *', () => {
-    console.log('⏳ Running daily order archiving...');
-    archiveOldOrders()
-      .then(() => console.log('✅ Order archiving completed'))
-      .catch(err => console.error('❌ Archiving failed:', err));
-  });
-
-  // ✅ Health ping every 30 mins
-  cron.schedule('*/30 * * * *', () => {
-    console.log('🔄 Background jobs running normally');
-  });
-};
-
-// ------------------------------
-// 🌍 Utility to get Local IP
-// ------------------------------
-const getLocalIP = () => {
-  const interfaces = os.networkInterfaces();
-  for (const name of Object.keys(interfaces)) {
-    for (const iface of interfaces[name] || []) {
-      if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address;
-      }
-    }
-  }
-  return 'localhost';
-};
-
-// ------------------------------
-// 🌍 Connect to MongoDB & Start Server
-// ------------------------------
-const PORT = process.env.PORT || 5000;
-
-console.log('🧪 Connecting to MongoDB...');
-
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
+// ✅ MongoDB Connect (only once, re-use across functions)
+let isConnected = false;
+const connectDB = async () => {
+  if (!isConnected) {
+    await mongoose.connect(process.env.MONGO_URI);
+    isConnected = true;
     console.log('✅ MongoDB connected');
+    setupOrderCleanupJob();
 
-    setupScheduledJobs(); // ✅ Initialize background jobs
-
-    app.listen(PORT, '0.0.0.0', () => {
-      const localIP = getLocalIP();
-      console.log(`✅ Server running at:`);
-      console.log(`   • Localhost:     http://localhost:${PORT}`);
-      console.log(`   • Network IP:    http://${localIP}:${PORT}`);
-      console.log('⏰ Background jobs initialized');
+    cron.schedule('0 0 * * *', async () => {
+      console.log('⏳ Running daily archiving...');
+      await archiveOldOrders();
     });
-  })
-  .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
-    process.exit(1);
-  });
+  }
+};
+
+// ✅ Export API handler for Vercel
+export default async function handler(req, res) {
+  await connectDB();
+  return app(req, res); // Express handles the request
+}

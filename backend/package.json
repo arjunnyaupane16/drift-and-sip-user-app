@@ -2,14 +2,14 @@
   "name": "backend",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Drift and Sip backend API",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -17,7 +17,9 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.2",
-    "node-cron": "^4.2.1",
+    "node-cron": "^4.2.1"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.10"
   }
 }
