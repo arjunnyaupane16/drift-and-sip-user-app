@@ -1,5 +1,5 @@
 // utils/constants.js
-export const BACKEND_URL = 'http://192.168.1.4:5000/api';  // ✅ Use your server IP
+export const BACKEND_URL = 'https://drift-and-sip-backend-l3pr.onrender.com/api';
 
 // Order Routes
 export const ORDER_API = `${BACKEND_URL}/orders`;
