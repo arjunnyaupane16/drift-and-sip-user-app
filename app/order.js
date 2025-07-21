@@ -15,7 +15,7 @@ import {
   View
 } from 'react-native';
 import { useCart } from '../context/CartContext';
-import { BACKEND_URL } from '../utils/constants';
+import { ORDER_API } from '../utils/constants';
 import styles from './styles/OrderStyle';
 
 const OrderScreen = () => {
@@ -69,14 +69,25 @@ const OrderScreen = () => {
         createdAt: new Date().toISOString()
       };
 
-      const res = await fetch(`${BACKEND_URL}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData)
-      });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to place order');
+const res = await fetch(`${ORDER_API}`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(orderData)
+});
+
+const text = await res.text(); // ✅ Read raw response as text (even HTML)
+console.log("🧪 Raw response from server:", text); // 🪵 Helps you see if it's JSON or error page
+
+let data;
+try {
+  data = JSON.parse(text); // ✅ Now we attempt to parse
+} catch (err) {
+  throw new Error("⚠️ Server didn't return valid JSON. Response may be HTML or an error page.");
+}
+
+if (!res.ok) throw new Error(data.message || 'Failed to place order');
+
 
       clearCart();
 
