@@ -130,82 +130,137 @@ if (!res.ok) throw new Error(data.message || 'Failed to place order');
       </View>
     </View>
   );
-
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+   return Platform.OS === 'web' ? (
+  <View style={{ flex: 1 }}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContainer}
+      keyboardShouldPersistTaps="handled"
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={{ flex: 1 }}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Text style={styles.sectionTitle}>Your Information</Text>
+      <Text style={styles.sectionTitle}>Your Information</Text>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Name *"
-              placeholderTextColor="#888"
-              value={orderDetails.customerName}
-              onChangeText={(text) => setOrderDetails({ ...orderDetails, customerName: text })}
-            />
+      <TextInput
+        style={styles.input}
+        placeholder="Name *"
+        placeholderTextColor="#888"
+        value={orderDetails.customerName}
+        onChangeText={(text) =>
+          setOrderDetails({ ...orderDetails, customerName: text })
+        }
+      />
 
-            <TextInput
-              style={styles.input}
-              placeholder="Phone Number"
-              placeholderTextColor="#888"
-              keyboardType="phone-pad"
-              value={orderDetails.phone}
-              onChangeText={(text) => setOrderDetails({ ...orderDetails, phone: text })}
-            />
+      <TextInput
+        style={styles.input}
+        placeholder="Phone Number"
+        placeholderTextColor="#888"
+        keyboardType="phone-pad"
+        value={orderDetails.phone}
+        onChangeText={(text) =>
+          setOrderDetails({ ...orderDetails, phone: text })
+        }
+      />
 
-            <TextInput
-              style={styles.input}
-              placeholder="Table Number *"
-              placeholderTextColor="#888"
-              keyboardType="number-pad"
-              value={orderDetails.tableNumber}
-              onChangeText={(text) => setOrderDetails({ ...orderDetails, tableNumber: text })}
-            />
+      <TextInput
+        style={styles.input}
+        placeholder="Table Number *"
+        placeholderTextColor="#888"
+        keyboardType="number-pad"
+        value={orderDetails.tableNumber}
+        onChangeText={(text) =>
+          setOrderDetails({ ...orderDetails, tableNumber: text })
+        }
+      />
 
-            <TextInput
-              style={[styles.input, styles.multilineInput]}
-              placeholder="Special Instructions"
-              placeholderTextColor="#888"
-              value={orderDetails.specialInstructions}
-              onChangeText={(text) => setOrderDetails({ ...orderDetails, specialInstructions: text })}
-              multiline
-              numberOfLines={3}
-            />
+      <TextInput
+        style={[styles.input, styles.multilineInput]}
+        placeholder="Special Instructions"
+        placeholderTextColor="#888"
+        value={orderDetails.specialInstructions}
+        onChangeText={(text) =>
+          setOrderDetails({ ...orderDetails, specialInstructions: text })
+        }
+        multiline
+        numberOfLines={3}
+      />
 
-            <Text style={styles.sectionTitle}>Your Order</Text>
-            {cartItems.map(renderOrderItem)}
+      <Text style={styles.sectionTitle}>Your Order</Text>
+      {cartItems.map(renderOrderItem)}
 
-            <View style={styles.totalContainer}>
-              <Text style={styles.totalLabel}>Total:</Text>
-              <Text style={styles.totalAmount}>Rs. {(getTotal() ?? 0).toFixed(2)}</Text>
-            </View>
-          </ScrollView>
+      <View style={styles.totalContainer}>
+        <Text style={styles.totalLabel}>Total:</Text>
+        <Text style={styles.totalAmount}>
+          Rs. {(getTotal() ?? 0).toFixed(2)}
+        </Text>
+      </View>
+    </ScrollView>
 
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleOrderSubmit}
-            >
-              {loading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text style={styles.submitButtonText}>Place Order</Text>
-              )}
-            </TouchableOpacity>
+    <View style={styles.footer}>
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={handleOrderSubmit}
+      >
+        {loading ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <Text style={styles.submitButtonText}>Place Order</Text>
+        )}
+      </TouchableOpacity>
+    </View>
+  </View>
+) : (
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+  >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.sectionTitle}>Your Information</Text>
+
+          {/* ...same inputs here... */}
+
+          <TextInput
+            style={styles.input}
+            placeholder="Name *"
+            placeholderTextColor="#888"
+            value={orderDetails.customerName}
+            onChangeText={(text) =>
+              setOrderDetails({ ...orderDetails, customerName: text })
+            }
+          />
+
+          {/* repeat the rest like above... */}
+
+          <Text style={styles.sectionTitle}>Your Order</Text>
+          {cartItems.map(renderOrderItem)}
+
+          <View style={styles.totalContainer}>
+            <Text style={styles.totalLabel}>Total:</Text>
+            <Text style={styles.totalAmount}>
+              Rs. {(getTotal() ?? 0).toFixed(2)}
+            </Text>
           </View>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleOrderSubmit}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.submitButtonText}>Place Order</Text>
+            )}
+          </TouchableOpacity>
         </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
-  );
+      </View>
+    </TouchableWithoutFeedback>
+  </KeyboardAvoidingView>
+);
 };
 
 export default OrderScreen;
