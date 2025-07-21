@@ -1,12 +1,11 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   ScrollView,
   Text,
@@ -15,15 +14,12 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
-
-import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { BACKEND_URL } from '../utils/constants';
 import styles from './styles/OrderStyle';
 
 const OrderScreen = () => {
   const { cartItems, clearCart, getTotal } = useCart();
-  const { isAuthenticated, user } = useAuth();
   const router = useRouter();
 
   const [orderDetails, setOrderDetails] = useState({
@@ -33,26 +29,9 @@ const OrderScreen = () => {
     specialInstructions: ''
   });
 
-  const [authModalVisible, setAuthModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      setOrderDetails(prev => ({
-        ...prev,
-        customerName: user.name || '',
-        phone: user.phone || '',
-        tableNumber: ''
-      }));
-    }
-  }, [isAuthenticated, user]);
-
   const handleOrderSubmit = async () => {
-    if (!isAuthenticated) {
-      setAuthModalVisible(true);
-      return;
-    }
-
     if (cartItems.length === 0) {
       return Alert.alert('Empty Cart', 'You must add at least one item to your order.');
     }
@@ -72,7 +51,7 @@ const OrderScreen = () => {
     try {
       const orderData = {
         customer: {
-          id: user?.id || null,
+          id: null,
           name: customerName,
           phone
         },
@@ -83,7 +62,7 @@ const OrderScreen = () => {
           price: item.price,
           quantity: item.quantity,
           size: item.size,
-          image: item.image,
+          image: item.image
         })),
         specialInstructions: orderDetails.specialInstructions,
         totalAmount: getTotal(),
@@ -97,8 +76,6 @@ const OrderScreen = () => {
       });
 
       const data = await res.json();
-      console.log('📦 Order API Response:', res.status, data); // ✅ Debug log
-
       if (!res.ok) throw new Error(data.message || 'Failed to place order');
 
       clearCart();
@@ -106,14 +83,14 @@ const OrderScreen = () => {
       router.push({
         pathname: '/receipt',
         params: {
-          order: JSON.stringify(orderData),
+          order: JSON.stringify(data),
           paymentStatus: 'N/A'
         }
       });
 
     } catch (error) {
       Alert.alert('Order Failed', error.message || 'Something went wrong');
-      console.error('❌ Order error:', error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -122,7 +99,14 @@ const OrderScreen = () => {
   const renderOrderItem = (item, index) => (
     <View key={`${item.id}-${index}`} style={styles.itemContainer}>
       {item.image && (
-        <Image source={item.image} style={styles.itemImage} />
+        <Image
+          source={typeof item.image === 'string'
+            ? { uri: item.image }
+            : item.image?.uri
+              ? { uri: item.image.uri }
+              : null}
+          style={styles.itemImage}
+        />
       )}
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>
@@ -144,7 +128,10 @@ const OrderScreen = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1 }}>
-          <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            keyboardShouldPersistTaps="handled"
+          >
             <Text style={styles.sectionTitle}>Your Information</Text>
 
             <TextInput
@@ -153,8 +140,6 @@ const OrderScreen = () => {
               placeholderTextColor="#888"
               value={orderDetails.customerName}
               onChangeText={(text) => setOrderDetails({ ...orderDetails, customerName: text })}
-              autoComplete="name"
-              textContentType="name"
             />
 
             <TextInput
@@ -164,8 +149,6 @@ const OrderScreen = () => {
               keyboardType="phone-pad"
               value={orderDetails.phone}
               onChangeText={(text) => setOrderDetails({ ...orderDetails, phone: text })}
-              autoComplete="tel"
-              textContentType="telephoneNumber"
             />
 
             <TextInput
@@ -175,7 +158,6 @@ const OrderScreen = () => {
               keyboardType="number-pad"
               value={orderDetails.tableNumber}
               onChangeText={(text) => setOrderDetails({ ...orderDetails, tableNumber: text })}
-              autoComplete="off"
             />
 
             <TextInput
@@ -201,7 +183,6 @@ const OrderScreen = () => {
             <TouchableOpacity
               style={styles.submitButton}
               onPress={handleOrderSubmit}
-              disabled={!isAuthenticated || loading}
             >
               {loading ? (
                 <ActivityIndicator color="white" />
@@ -210,22 +191,6 @@ const OrderScreen = () => {
               )}
             </TouchableOpacity>
           </View>
-
-          <Modal
-            visible={authModalVisible}
-            animationType="slide"
-            onRequestClose={() => setAuthModalVisible(false)}
-          >
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Please log in to place your order</Text>
-              <TouchableOpacity
-                style={styles.authButton}
-                onPress={() => setAuthModalVisible(false)}
-              >
-                <Text style={styles.authButtonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          </Modal>
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

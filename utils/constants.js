@@ -1,5 +1,5 @@
 // utils/constants.js
-export const BACKEND_URL = 'https://drift-and-sip-backend-l3pr.onrender.com/api';
+export const BASE_URL = "https://drift-and-sip-backend-l3pr.onrender.com";
 
 // Order Routes
 export const ORDER_API = `${BACKEND_URL}/orders`;
