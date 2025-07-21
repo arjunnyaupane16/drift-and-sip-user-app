@@ -56,14 +56,16 @@ const OrderScreen = () => {
           phone
         },
         tableNumber,
-        items: cartItems.map(item => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          size: item.size,
-          image: item.image
-        })),
+       items: cartItems.map(item => ({
+  id: item.id,
+  name: item.name,
+  price: item.price,
+  quantity: item.quantity,
+  size: item.size,
+  image: typeof item.image === 'string'
+    ? item.image
+    : item.image?.uri ?? ''
+})),
         specialInstructions: orderDetails.specialInstructions,
         totalAmount: getTotal(),
         createdAt: new Date().toISOString()
