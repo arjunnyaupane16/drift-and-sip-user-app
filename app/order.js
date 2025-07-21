@@ -15,6 +15,7 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
+
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { BACKEND_URL } from '../utils/constants';
@@ -28,7 +29,7 @@ const OrderScreen = () => {
   const [orderDetails, setOrderDetails] = useState({
     customerName: '',
     phone: '',
-    tableNumber: '', // ✅ Added table number
+    tableNumber: '',
     specialInstructions: ''
   });
 
@@ -39,8 +40,8 @@ const OrderScreen = () => {
     if (isAuthenticated && user) {
       setOrderDetails(prev => ({
         ...prev,
-        customerName: '',
-        phone: '',
+        customerName: user.name || '',
+        phone: user.phone || '',
         tableNumber: ''
       }));
     }
@@ -75,7 +76,7 @@ const OrderScreen = () => {
           name: customerName,
           phone
         },
-        tableNumber, // ✅ Include table number in order
+        tableNumber,
         items: cartItems.map(item => ({
           id: item.id,
           name: item.name,
@@ -83,7 +84,6 @@ const OrderScreen = () => {
           quantity: item.quantity,
           size: item.size,
           image: item.image,
-
         })),
         specialInstructions: orderDetails.specialInstructions,
         totalAmount: getTotal(),
@@ -97,6 +97,8 @@ const OrderScreen = () => {
       });
 
       const data = await res.json();
+      console.log('📦 Order API Response:', res.status, data); // ✅ Debug log
+
       if (!res.ok) throw new Error(data.message || 'Failed to place order');
 
       clearCart();
@@ -111,7 +113,7 @@ const OrderScreen = () => {
 
     } catch (error) {
       Alert.alert('Order Failed', error.message || 'Something went wrong');
-      console.error(error);
+      console.error('❌ Order error:', error);
     } finally {
       setLoading(false);
     }
@@ -120,10 +122,7 @@ const OrderScreen = () => {
   const renderOrderItem = (item, index) => (
     <View key={`${item.id}-${index}`} style={styles.itemContainer}>
       {item.image && (
-        <Image
-          source={item.image}
-          style={styles.itemImage}
-        />
+        <Image source={item.image} style={styles.itemImage} />
       )}
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>
@@ -145,10 +144,7 @@ const OrderScreen = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1 }}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            keyboardShouldPersistTaps="handled"
-          >
+          <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
             <Text style={styles.sectionTitle}>Your Information</Text>
 
             <TextInput
@@ -157,6 +153,8 @@ const OrderScreen = () => {
               placeholderTextColor="#888"
               value={orderDetails.customerName}
               onChangeText={(text) => setOrderDetails({ ...orderDetails, customerName: text })}
+              autoComplete="name"
+              textContentType="name"
             />
 
             <TextInput
@@ -166,6 +164,8 @@ const OrderScreen = () => {
               keyboardType="phone-pad"
               value={orderDetails.phone}
               onChangeText={(text) => setOrderDetails({ ...orderDetails, phone: text })}
+              autoComplete="tel"
+              textContentType="telephoneNumber"
             />
 
             <TextInput
@@ -175,6 +175,7 @@ const OrderScreen = () => {
               keyboardType="number-pad"
               value={orderDetails.tableNumber}
               onChangeText={(text) => setOrderDetails({ ...orderDetails, tableNumber: text })}
+              autoComplete="off"
             />
 
             <TextInput
